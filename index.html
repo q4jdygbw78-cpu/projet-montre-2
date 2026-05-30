@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crown & Steel - Haute Horlogerie Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #06070a;
+            --panel-bg: #10121a;
+            --panel-border: #1f2333;
+            --gold: #c5a880;
+            --gold-light: #e5d4bc;
+            --text-main: #ffffff;
+            --text-muted: #888e9e;
+            --green: #00e676;
+            --red: #ff1744;
+        }
+
+        body {
+            font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .brand-logo svg {
+            fill: var(--gold);
+            width: 28px;
+            height: 28px;
+        }
+
+        .brand-logo h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        input, select {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        input { flex-grow: 1; }
+        input:focus, select:focus { border-color: var(--gold); }
+
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 110px);
+        }
+
+        .sidebar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--panel-border);
+            max-height: 220px;
+            overflow-x: auto;
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        .watch-card {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--panel-border);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            min-width: 180px;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .watch-card:hover, .watch-card.active {
+            border-color: var(--gold);
+            background-color: rgba(197, 168, 128, 0.03);
+        }
+
+        .card-brand {
+            font-size: 0.7rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 3px 0 8px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .content {
+            padding: 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .hero-section {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 15px;
+            background-color: var(--panel-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--panel-border);
+            align-items: center;
+        }
+
+        .watch-img-container {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--gold);
+        }
+
+        .watch-img-container img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .metric-box {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-box h3 {
+            margin: 0 0 5px 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .metric-box p {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 15px;
+            border-radius: 8px;
+            height: 250px;
+        }
+
+        @media (min-width: 768px) {
+            .navbar { flex-direction: row; justify-content: space-between; padding: 15px 30px; }
+            .search-container { width: 40%; }
+            .main-layout { grid-template-columns: 350px 1fr; display: grid; height: calc(100vh - 72px); }
+            .sidebar { flex-direction: column; max-height: none; overflow-y: auto; overflow-x: hidden; border-right: 1px solid var(--panel-border); border-bottom: none; }
+            .watch-card { min-width: 0; }
+            .hero-section { grid-template-columns: 180px 1fr; padding: 25px; }
+            .watch-img-container { width: 180px; height: 180px; }
+            .metrics-grid { grid-template-columns: repeat(4, 1fr); gap: 15px; }
+            .chart-container { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand-logo">
+            <!-- Icône Couronne SVG -->
+            <svg viewBox="0 0 24 24">
+                <path d="M2,4L5,10L12,2L19,10L22,4L20,19H4L2,4M12,14A2.5,2.5 0 0,0 9.5,16.5A2.5,2.5 0 0,0 12,19A2.5,2.5 0 0,0 14.5,16.5A2.5,2.5 0 0,0 12,14Z"/>
+            </svg>
+            <h1>Crown & Steel</h1>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Rechercher modèle, marque..." oninput="filterWatches()">
+            <select id="filterCategory" onchange="filterWatches()">
+                <option value="all">Toutes les marques</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="sidebar" id="sidebarList"></div>
+
+        <div class="content">
+            <div class="hero-section">
+                <div class="watch-img-container">
+                    <img id="viewImage" src="" alt="Watch Image">
+                </div>
+                <div>
+                    <h2 id="viewBrand" style="color: var(--gold); margin: 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Marque</h2>
+                    <h1 id="viewModel" style="margin: 5px 0; font-size: 1.6rem; font-weight: 600;">Nom de la montre</h1>
+                    <p id="viewRef" style="color: var(--text-muted); margin: 0; font-size: 0.85rem;"></p>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-box">
+                    <h3>Prix Marché</h3>
+                    <p id="mPrice">-</p>
+                </div>
+                <div class="metric-box">
+                    <h3>Tendances (6m)</h3>
+                    <p id="mTrend">-</p>
+                </div>
+                <div class="metric-box">
+                    <h3>Demande</h3>
+                    <p id="mDemand">-</p>
+                </div>
+                <div class="metric-box">
+                    <h3>Ventes / mois</h3>
+                    <p id="mVolume">-</p>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de données : 11 Marques avec plusieurs modèles phares et images directes
+        const database = [
+            // ROLEX
+            { id: 1, brand: "Rolex", model: "Daytona Panda", ref: "126500LN", price: 31500, trend: "+4.2%", trendDir: "up", demand: "Ultra Élevée", volume: 45, img: "https://images.unsplash.com/photo-1639006570490-79c0c53f1080?w=300", history: [28000, 29000, 30100, 31000, 31200, 31500] },
+            { id: 2, brand: "Rolex", model: "Submariner Starbucks", ref: "126610LV", price: 15400, trend: "+1.5%", trendDir: "up", demand: "Très Élevée", volume: 60, img: "https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=300", history: [14800, 15000, 15100, 15200, 15300, 15400] },
+            { id: 3, brand: "Rolex", model: "GMT-Master II Pepsi", ref: "126710BLRO", price: 21000, trend: "+3.8%", trendDir: "up", demand: "Intense", volume: 38, img: "https://images.unsplash.com/photo-1622434641406-a158123450f9?w=300", history: [19500, 19800, 20200, 20500, 20800, 21000] },
+            
+            // PATEK PHILIPPE
+            { id: 4, brand: "Patek Philippe", model: "Nautilus Blue Dial", ref: "5711/1A-010", price: 118000, trend: "-1.8%", trendDir: "down", demand: "Exceptionnelle", volume: 5, img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300", history: [122000, 121000, 119500, 118000, 117500, 118000] },
+            { id: 5, brand: "Patek Philippe", model: "Aquanaut Travel Time", ref: "5164A-001", price: 68500, trend: "+0.8%", trendDir: "up", demand: "Très Élevée", volume: 11, img: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=300", history: [67000, 67200, 67800, 68000, 68200, 68500] },
+
+            // AUDEMARS PIGUET
+            { id: 6, brand: "Audemars Piguet", model: "Royal Oak 'Jumbo'", ref: "16202ST", price: 74500, trend: "+2.1%", trendDir: "up", demand: "Saturée", volume: 12, img: "https://images.unsplash.com/photo-1539874754764-5a96559165b0?w=300", history: [71000, 72000, 73500, 73000, 74000, 74500] },
+            { id: 7, brand: "Audemars Piguet", model: "Royal Oak Chrono Blue", ref: "26240ST", price: 52000, trend: "-2.5%", trendDir: "down", demand: "Élevée", volume: 19, img: "https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=300", history: [54000, 53500, 53000, 52800, 52200, 52000] },
+
+            // RICHARD MILLE
+            { id: 8, brand: "Richard Mille", model: "RM 67-02 Extra Flat", ref: "RM67-02", price: 285000, trend: "+5.0%", trendDir: "up", demand: "Exclusive", volume: 2, img: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=300", history: [270000, 273000, 278000, 280000, 282000, 285000] },
+
+            // F.P. JOURNE
+            { id: 9, brand: "F.P. Journe", model: "Chronomètre Bleu", ref: "CB Tantalum", price: 89000, trend: "+8.5%", trendDir: "up", demand: "Collectionneur", volume: 3, img: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=300", history: [79000, 81000, 84000, 86000, 87500, 89000] },
+
+            // VACHERON CONSTANTIN
+            { id: 10, brand: "Vacheron Constantin", model: "Overseas Bleu", ref: "4500V/110A", price: 29500, trend: "+1.2%", trendDir: "up", demand: "Stable Élevée", volume: 15, img: "https://images.unsplash.com/photo-1612817288484-6f916006741a?w=300", history: [29000, 29100, 29300, 29200, 29400, 29500] },
+
+            // A. LANGE & SÖHNE
+            { id: 11, brand: "A. Lange & Söhne", model: "Lange 1 Monorestore", ref: "191.039", price: 44000, trend: "+0.5%", trendDir: "up", demand: "Niche Élite", volume: 4, img: "https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?w=300", history: [43500, 43600, 43800, 43900, 44000, 44000] },
+
+            // H. MOSER & CIE
+            { id: 12, brand: "H. Moser & Cie", model: "Streamliner Flyback", ref: "6902-1200", price: 41000, trend: "+3.1%", trendDir: "up", demand: "Élevée", volume: 6, img: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=300", history: [39000, 39500, 40000, 40500, 40800, 41000] },
+
+            // MB&F
+            { id: 13, brand: "MB&F", model: "HM11 Architect", ref: "HM11", price: 210000, trend: "+12.3%", trendDir: "up", demand: "Ultra Rare", volume: 1, img: "https://images.unsplash.com/photo-1533139502658-0198f920d8e8?w=300", history: [185000, 190000, 195000, 202000, 205000, 210000] },
+
+            // OMEGA
+            { id: 14, brand: "Omega", model: "Speedmaster Calibre 321", ref: "311.30.40", price: 16200, trend: "+2.0%", trendDir: "up", demand: "Très Stable", volume: 24, img: "https://images.unsplash.com/photo-1619134778706-7015533a6150?w=300", history: [15800, 15900, 16000, 16000, 16100, 16200] },
+
+            // CARTIER
+            { id: 15, brand: "Cartier", model: "Santos de Cartier XL", ref: "WSSA0039", price: 8900, trend: "+0.9%", trendDir: "up", demand: "Forte", volume: 55, img: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=300", history: [8700, 8750, 8800, 8820, 8850, 8890] }
+        ];
+
+        let chartInstance = null;
+        const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
+
+        // Remplir le filtre de marques automatiquement
+        const brands = [...new Set(database.map(w => w.brand))];
+        const select = document.getElementById('filterCategory');
+        brands.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b;
+            opt.innerText = b;
+            select.appendChild(opt);
+        });
+
+        function displayList(watches) {
+            const listContainer = document.getElementById('sidebarList');
+            listContainer.innerHTML = "";
+
+            if(watches.length === 0) {
+                listContainer.innerHTML = '<p style="color: var(--text-muted); padding:20px;">Aucun résultat</p>';
+                return;
+            }
+
+            watches.forEach((watch) => {
+                const card = document.createElement('div');
+                card.id = `card-${watch.id}`;
+                card.className = "watch-card";
+                card.innerHTML = `
+                    <div class="card-brand">${watch.brand}</div>
+                    <div class="card-title">${watch.model}</div>
+                    <div class="card-footer">
+                        <span style="color:var(--gold); font-weight:bold;">${watch.price.toLocaleString('fr-FR')} €</span>
+                        <span style="color: ${watch.trendDir === 'up' ? 'var(--green)' : 'var(--red)'}">${watch.trend}</span>
+                    </div>
+                `;
+                card.onclick = () => selectWatch(watch);
+                listContainer.appendChild(card);
+            });
+        }
+
+        function selectWatch(watch) {
+            document.querySelectorAll('.watch-card').forEach(c => c.classList.remove('active'));
+            const activeCard = document.getElementById(`card-${watch.id}`);
+            if(activeCard) activeCard.classList.add('active');
+
+            // Mise à jour de l'affichage principal
+            document.getElementById('viewBrand').innerText = watch.brand;
+            document.getElementById('viewModel').innerText = watch.model;
+            document.getElementById('viewRef').innerText = `Réf : ${watch.ref}`;
+            document.getElementById('viewImage').src = watch.img;
+            document.getElementById('mPrice').innerText = `${watch.price.toLocaleString('fr-FR')} €`;
+            
+            const trendBox = document.getElementById('mTrend');
+            trendBox.innerText = watch.trend;
+            trendBox.style.color = watch.trendDir === 'up' ? 'var(--green)' : 'var(--red)';
+            
+            document.getElementById('mDemand').innerText = watch.demand;
+            document.getElementById('mVolume').innerText = `${watch.volume} u.`;
+
+            // Graphique
+            if (chartInstance) chartInstance.destroy();
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        data: watch.history,
+                        borderColor: '#c5a880',
+                        backgroundColor: 'rgba(197, 168, 128, 0.05)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: '#161924' }, ticks: { color: '#888e9e', font: { size: 10 } } },
+                        x: { grid: { color: '#161924' }, ticks: { color: '#888e9e', font: { size: 10 } } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function filterWatches() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const brandVal = document.getElementById('filterCategory').value;
+
+            const filtered = database.filter(watch => {
+                const matchesSearch = watch.brand.toLowerCase().includes(searchVal) || 
+                                      watch.model.toLowerCase().includes(searchVal) || 
+                                      watch.ref.toLowerCase().includes(searchVal);
+                const matchesBrand = brandVal === "all" || watch.brand === brandVal;
+                return matchesSearch && matchesBrand;
+            });
+
+            displayList(filtered);
+            if(filtered.length > 0) selectWatch(filtered[0]);
+        }
+
+        window.onload = () => {
+            displayList(database);
+            selectWatch(database[0]);
+        };
+    </script>
+</body>
+</html>
